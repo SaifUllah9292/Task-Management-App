@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { config } = require('./src/config');
+const routes = require('./src/routes');
 
 // Create an instance of Express
 const app = express();
@@ -17,6 +18,8 @@ app.use(cors());
 // Available under the req.body property
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/api/v1', routes);
 
 // Define a route handler for the default home page
 app.get('/', (req, res) => {
