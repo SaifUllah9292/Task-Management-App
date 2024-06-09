@@ -91,23 +91,27 @@ exports.getById = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    let tasks = await Task.findAll({ where: { userId: req.user.id } });
+    // Extract query parameters for pagination and sorting
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 10;
+    const sort = req.query.sort || 'createdAt'; // Default sort by createdAt
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC'; // Default order is ascending
 
+    // Calculate limit and offset
+    const limit = size;
+    const offset = (page - 1) * size;
+
+    // Fetch tasks with pagination and sorting
+    let tasks = await Task.findAll({
+      where: { userId: req.user.id },
+      limit: limit,
+      offset: offset,
+      order: [[sort, order]],
+    });
+
+    // Fetch total tasks count
     let tasksCount = await Task.count({ where: { userId: req.user.id } });
 
-    //  return apiResponse(res, 200, true, `${admins.length} admins found`, {
-    //    count: adminsCount,
-    //    admins,
-    //  });
-
-    // const tasks = await Task.findAll({
-    //   include: [
-    //     {
-    //       model: User,
-    //       as: 'creator',
-    //     },
-    //   ],
-    // });
     return apiResponse(res, 200, true, `${tasks.length} tasks found`, {
       count: tasksCount,
       tasks,

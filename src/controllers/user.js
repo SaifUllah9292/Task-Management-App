@@ -3,7 +3,6 @@ const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const { config } = require('../config');
 const apiResponse = require('../utils/apiResponse');
-// const sequelize = db.sequelize;
 
 function generateJWT(user, res) {
   try {
@@ -78,45 +77,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// exports.deleteAccount = async (req, res) => {
-//   //Check if user exists...
-//   const user = await User.findOne({ where: { id: req.user.id } });
-//   if (!user) {
-//     return res
-//       .status(404)
-//       .json({ status: 'Failed', message: 'User not found' });
-//   }
-//   User
-//     .destroy({ where: { id: req.user.id } })
-//     .then(() => {
-//       res
-//         .status(200)
-//         .json({ status: 'Success', message: 'Account deleted successfully' });
-//     })
-//     .catch((err) => {
-//       res.status(400).json({ status: 'Failed', Error: err.message });
-//     });
-// };
-// exports.updateUser = async (req, res) => {
-//   const user = await User.findOne({ where: { id: req.user.id } });
-//   if (!user) {
-//     return res
-//       .status(404)
-//       .json({ status: 'Failed', message: 'User not found' });
-//   }
-//   User
-//     .update(req.body, { where: { id: req.user.id } })
-//     .then((newUser) => {
-//       res.status(200).json({
-//         status: 'Success',
-//         message: 'User updated successfully',
-//       });
-//     })
-//     .catch((err) => {
-//       res.status(400).json({ status: 'Failed', error: err.message });
-//     });
-// };
-
 exports.me = async (req, res) => {
   try {
     const user = await User.findOne({
@@ -141,68 +101,52 @@ exports.user = async (req, res) => {
   }
 };
 
-// exports.all = async (req, res) => {
-//   try {
-//     const users = await User.findAll({});
-//     return apiResponse(res, 200, true, ' user', users);
-//   } catch (err) {
-//     return apiResponse(res, 500, false, err.message);
-//   }
-// };
+exports.update = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: { id: req.user.id },
+    });
+    if (!user) {
+      return apiResponse(res, 404, false, 'No user found');
+    }
+    if (user.id !== req.user.id) {
+      return apiResponse(
+        res,
+        400,
+        false,
+        'You have no access to edit this user'
+      );
+    }
 
-// exports.changeUserStatus = async (req, res) => {
-//   try {
-//     if (!req.params.id) {
-//       return apiResponse(res, 400, false, 'enter user id');
-//     }
-//     const user = await User.findOne({ where: { id: req.params.id } });
-//     if (!user) {
-//       return apiResponse(res, 404, false, 'No user found with this id');
-//     }
-//     let status = 'blocked';
-//     if (user.status == 'blocked') {
-//       status = 'active';
-//     }
-//     await user.update({
-//       status,
-//     });
-//     return apiResponse(res, 200, true, `user account ${status} successfully`);
-//   } catch (err) {
-//     return apiResponse(res, 500, false, err.message);
-//   }
-// };
+    // Remove the password field from the request body
+    const { password, ...updateData } = req.body;
+    const updatedUser = await user.update(updateData);
+    return apiResponse(res, 200, true, 'Updated successfully', updatedUser);
+  } catch (error) {
+    return apiResponse(res, 500, false, error.message);
+  }
+};
+exports.delete = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: { id: req.user.id },
+    });
+    if (!user) {
+      return apiResponse(res, 404, false, 'No user found');
+    }
+    if (user.id !== req.user.id) {
+      return apiResponse(
+        res,
+        400,
+        false,
+        'You have no access to edit this user'
+      );
+    }
 
-// exports.updateProfilePic = async (req, res) => {
-//   try {
-//     if (req.user.id == req.params.userId) {
-//       if (req.file) req.body.profilePicture = req.file.filename;
-//       if (!req.body.profilePicture) {
-//         return apiResponse(res, 400, false, 'must select a picture');
-//       }
-//       const user = await User.findByPk(req.user.id);
-
-//       if (!user) {
-//         return apiResponse(res, 404, false, 'No user found with this id');
-//       }
-//       await user.update({
-//         profilePicture: req.body.profilePicture,
-//       });
-//       return apiResponse(
-//         res,
-//         200,
-//         true,
-//         'Profile picture updated successfully',
-//         user
-//       );
-//     } else {
-//       return apiResponse(
-//         res,
-//         401,
-//         false,
-//         'You are not authorize to perform this action'
-//       );
-//     }
-//   } catch (error) {
-//     return apiResponse(res, 500, false, error.message);
-//   }
-// };
+    // Remove the password field from the request body
+    await user.destroy();
+    return apiResponse(res, 200, true, 'Deleted successfully');
+  } catch (error) {
+    return apiResponse(res, 500, false, error.message);
+  }
+};

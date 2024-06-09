@@ -4,7 +4,6 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
     {
-      // name: { type: DataTypes.STRING, allowNull: false },
       firstName: DataTypes.STRING,
       lastName: DataTypes.STRING,
       email: {
@@ -18,38 +17,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      // role: {
-      //   type: DataTypes.ENUM('user', 'admin', 'editor'),
-      //   defaultValue: 'user',
-      //   validate: {
-      //     isIn: {
-      //       args: [['user', 'admin', 'editor']],
-      //       msg: "role must be ['admin','user','editor']",
-      //     },
-      //   },
-      // },
-      // status: {
-      //   type: DataTypes.ENUM('active', 'blocked'),
-      //   defaultValue: 'active',
-      //   validate: {
-      //     isIn: {
-      //       args: [['active', 'blocked', 'editor']],
-      //       msg: "status must be ['active','blocked']",
-      //     },
-      //   },
-      // },
-      // profilePicture: {
-      //   type: DataTypes.STRING,
-      // },
-      // provider: {
-      //   type: DataTypes.STRING,
-      // },
-      // facebookId: {
-      //   type: DataTypes.STRING,
-      // },
-      // googleId: {
-      //   type: DataTypes.STRING,
-      // },
     },
     {
       timestamps: true,
