@@ -55,16 +55,12 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: true,
     }
   );
-  // User.associate = (models) => {
-  //   User.hasMany(models.Blog, {
-  //     foreignKey: { name: 'userId', allowNull: false },
-  //     as: 'blogs',
-  //   });
-  //   User.hasMany(models.UserSubscription, {
-  //     foreignKey: { name: 'userId', allowNull: false },
-  //     as: 'subscription',
-  //   });
-  // };
+  User.associate = (models) => {
+    User.hasMany(models.Task, {
+      foreignKey: { name: 'userId', allowNull: false },
+      as: 'tasks',
+    });
+  };
   User.beforeCreate(async (user) => {
     const encryptPassword = await bcrypt.hash(user.password, 12);
     user.password = encryptPassword;

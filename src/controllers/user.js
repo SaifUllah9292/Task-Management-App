@@ -54,7 +54,6 @@ exports.login = async (req, res) => {
   try {
     let { email, password } = req.body;
     // Check if email and password exists...
-    console.log('EEEE', email, password);
     if (!email || !password) {
       return apiResponse(res, 404, false, 'Password or email missing');
     }
@@ -120,7 +119,6 @@ exports.login = async (req, res) => {
 
 exports.me = async (req, res) => {
   try {
-    console.log('-======================================');
     const user = await User.findOne({
       where: { id: req.user.id },
     });

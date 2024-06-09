@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-// const blogsRoutes = require('./blog');
+const taskRoutes = require('./task');
 const userRoutes = require('./user');
 // const subscriptionPlan = require('./subscriptionPlans');
 // const purchasedSubscription = require('./userSubscriptions');
@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 });
 
 router.use('/user', userRoutes);
-// router.use('/blog', blogsRoutes);
+router.use('/task', taskRoutes);
 // router.use('/plan', subscriptionPlan);
 // router.use('/purchasedSubscription', purchasedSubscription);
 // router.use('/blog', blogsRoutes);
