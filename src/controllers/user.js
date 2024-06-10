@@ -180,7 +180,7 @@ exports.forgotPassword = async (req, res) => {
     // token expires in 48 hours
     jwt.sign(
       payload,
-      'Hello World',
+      config.jwtSecret,
       { expiresIn: '1h' },
       async (error, token) => {
         if (error) throw error;
@@ -217,18 +217,14 @@ exports.resetPassword = async (req, res) => {
   try {
     const token = req.query.token;
     const { password } = req.body;
-    const decoded = await promisify(jwt.verify)(token, 'Hello World');
+    const decoded = await promisify(jwt.verify)(token, config.jwtSecret);
     if (!decoded) {
       return apiResponse(res, 401, false, 'Invalid forgot password link');
     }
     const user = await User.findOne({
       where: {
-        _id: decoded.user.id,
+        id: decoded.user.id,
       },
-
-      // attributes: {
-      //   include: ["password"],
-      // },
     });
     if (!user) {
       return apiResponse(res, 404, false, 'No active user with this email');
