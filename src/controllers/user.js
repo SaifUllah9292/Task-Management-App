@@ -186,7 +186,7 @@ exports.forgotPassword = async (req, res) => {
         if (error) throw error;
 
         const html = ForgetPasswordEmail.email(
-          'http://localhost:4000/resetpassword',
+          'https://task-management-frontend-sable.vercel.app/resetpassword',
           token,
           req
         );
