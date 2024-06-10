@@ -21,7 +21,7 @@ function generateJWT(user, res) {
       { expiresIn: 360000 },
       (error, token) => {
         if (error) throw error;
-        return res.json({ token });
+        return res.json({ user, token });
       }
     );
   } catch (error) {
@@ -74,7 +74,10 @@ exports.login = async (req, res) => {
     if (!validPassword) {
       return apiResponse(res, 404, false, 'incorrect password');
     }
-    generateJWT(user, res);
+
+    // Remove the password from the user object before generating the token
+    const { password: userPassword, ...userWithoutPassword } = user.dataValues;
+    generateJWT(userWithoutPassword, res);
   } catch (error) {
     return apiResponse(res, 500, false, error.message);
   }
@@ -211,13 +214,11 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const token = req.query.token;
-    console.log('TTTT', token);
     const { newPassword } = req.body;
     const decoded = await promisify(jwt.verify)(token, 'Hello World');
     if (!decoded) {
       return apiResponse(res, 401, false, 'Invalid forgot password link');
     }
-    console.log('DDDD', decoded);
     const user = await User.findOne({
       _id: decoded.user.id,
 

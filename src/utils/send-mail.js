@@ -8,8 +8,6 @@ const sendMail = async (mailOptions) => {
     // sender: "smtp.mailtrap.live",
   };
 
-  console.log('Mail Options:', sendMailOptions); // Check mail options
-
   var transport = nodemailer.createTransport({
     // host: "live.smtp.mailtrap.io",
     service: 'gmail',
