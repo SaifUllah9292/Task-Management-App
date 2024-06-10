@@ -12,6 +12,15 @@ router.post(
 );
 router.post('/login', userController.login);
 
+router.post('/forgotpassword', userController.forgotPassword);
+
+router.post(
+  '/resetpassword',
+  // userValidator.forgotPassword(),
+  // userValidator.validate,
+  userController.resetPassword
+);
+
 router.get('/me', auth, userController.me);
 router.get('/:id', auth, userController.user);
 router.patch('/', auth, userController.update);

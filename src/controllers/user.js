@@ -3,6 +3,9 @@ const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const { config } = require('../config');
 const apiResponse = require('../utils/apiResponse');
+const ForgetPasswordEmail = require('../emailTemplates/forgotPassword');
+const { sendMail } = require('../utils/send-mail');
+const { promisify } = require('util');
 
 function generateJWT(user, res) {
   try {
@@ -148,5 +151,99 @@ exports.delete = async (req, res) => {
     return apiResponse(res, 200, true, 'Deleted successfully');
   } catch (error) {
     return apiResponse(res, 500, false, error.message);
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    let { email } = req.body;
+    const user = await User.findOne({
+      email,
+    });
+    if (!user) {
+      return apiResponse(res, 404, false, 'No active user with this email');
+    }
+    // const encryptPassword = await bcrypt.hash(password, 12);
+    // user.password = encryptPassword;
+    // await user.save()
+    const payload = {
+      user: {
+        id: user.id,
+      },
+    };
+
+    // token expires in 48 hours
+    jwt.sign(
+      payload,
+      'Hello World',
+      { expiresIn: '1h' },
+      async (error, token) => {
+        if (error) throw error;
+
+        const html = ForgetPasswordEmail.email(
+          'http://localhost:4000/resetpassword',
+          token,
+          req
+        );
+
+        const mailOptions = {
+          to: email,
+          subject: "Here's your password reset link!",
+          text: 'click on Button to Reset ',
+          html: html,
+        };
+
+        sendMail(mailOptions);
+
+        return apiResponse(
+          res,
+          200,
+          true,
+          'Please check your mail reset password link has been sent'
+        );
+      }
+    );
+  } catch (error) {
+    return apiResponse(res, 500, false, error.message);
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const token = req.query.token;
+    console.log('TTTT', token);
+    const { newPassword } = req.body;
+    const decoded = await promisify(jwt.verify)(token, 'Hello World');
+    if (!decoded) {
+      return apiResponse(res, 401, false, 'Invalid forgot password link');
+    }
+    console.log('DDDD', decoded);
+    const user = await User.findOne({
+      _id: decoded.user.id,
+
+      // attributes: {
+      //   include: ["password"],
+      // },
+    });
+    if (!user) {
+      return apiResponse(res, 404, false, 'No active user with this email');
+    }
+    const encryptPassword = await bcrypt.hash(newPassword, 12);
+    user.password = encryptPassword;
+    await user.save();
+    return apiResponse(res, 200, true, 'Updated password successfully');
+  } catch (error) {
+    if (error?.message === 'jwt expired') {
+      return apiResponse(
+        res,
+        401,
+        false,
+        'Forgot password link has been expired'
+      );
+    } else if (error?.message === 'jwt malformed') {
+      return apiResponse(res, 401, false, 'Invalid forgot password link');
+    } else {
+      return apiResponse(res, 401, false, 'Unauthorized access');
+    }
   }
 };
