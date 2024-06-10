@@ -161,7 +161,9 @@ exports.forgotPassword = async (req, res) => {
   try {
     let { email } = req.body;
     const user = await User.findOne({
-      email,
+      where: {
+        email,
+      },
     });
     if (!user) {
       return apiResponse(res, 404, false, 'No active user with this email');
@@ -214,13 +216,15 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const token = req.query.token;
-    const { newPassword } = req.body;
+    const { password } = req.body;
     const decoded = await promisify(jwt.verify)(token, 'Hello World');
     if (!decoded) {
       return apiResponse(res, 401, false, 'Invalid forgot password link');
     }
     const user = await User.findOne({
-      _id: decoded.user.id,
+      where: {
+        _id: decoded.user.id,
+      },
 
       // attributes: {
       //   include: ["password"],
@@ -229,7 +233,7 @@ exports.resetPassword = async (req, res) => {
     if (!user) {
       return apiResponse(res, 404, false, 'No active user with this email');
     }
-    const encryptPassword = await bcrypt.hash(newPassword, 12);
+    const encryptPassword = await bcrypt.hash(password, 12);
     user.password = encryptPassword;
     await user.save();
     return apiResponse(res, 200, true, 'Updated password successfully');
